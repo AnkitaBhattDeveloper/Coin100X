@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/buyFragment">
+    <fragment
+        android:id="@+id/buyFragment"
+        android:name="com.coin.coin100x.fragments.BuyFragment"
+        android:label="fragment_buy"
+        tools:layout="@layout/fragment_buy" >
+        <action
+            android:id="@+id/action_buyFragment_to_addMoneyFragment"
+            app:destination="@id/addMoneyFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addMoneyFragment"
+        android:name="com.coin.coin100x.fragments.AddMoneyFragment"
+        android:label="AddMoneyFragment" >
+        <action
+            android:id="@+id/action_addMoneyFragment_to_buyFragment"
+            app:destination="@id/buyFragment" />
+    </fragment>
+</navigation>

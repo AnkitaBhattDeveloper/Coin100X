@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "486811351996",
+    "firebase_url": "https://admin-app-258bd-default-rtdb.firebaseio.com",
+    "project_id": "admin-app-258bd",
+    "storage_bucket": "admin-app-258bd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486811351996:android:343713b39ae740d08bc9b9",
+        "android_client_info": {
+          "package_name": "com.coin.adminapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "486811351996-91j8agnu97f8qau5mrkkpivlm216pvm5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeUJ4iD6jqP4FpINnfw0ao7KqOgb_CLLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "486811351996-91j8agnu97f8qau5mrkkpivlm216pvm5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486811351996:android:b64a4ae0f1e19a098bc9b9",
+        "android_client_info": {
+          "package_name": "com.coin.coin100x"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "486811351996-91j8agnu97f8qau5mrkkpivlm216pvm5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeUJ4iD6jqP4FpINnfw0ao7KqOgb_CLLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "486811351996-91j8agnu97f8qau5mrkkpivlm216pvm5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

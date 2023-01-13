@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#82BBE8</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="l_blue">#7ECCD6</color>
+    <color name="btn_color">#CC7A95</color>
+    <color name="l_yellow">#F8E64D</color>
+    <color name="llyt_blue">#ACD6F8</color>
+    <color name="grey">#CAC9C7</color>
+    <color name="l_grey">#EAEDED</color>
+    <color name="bg_blue">#295EAC</color>
+    <color name="l_purple">#B183DD</color>
+    <color name="bg_purple">#70449B</color>
+    <color name="bg_dark_blue">#243F85</color>
+    <color name="dark_grey">#6D6E70</color>
+    <color name="auth_blue">#A5BFF1</color>
+    <color name="auth_purple">#B69BE8</color>
+    <color name="auth_dark_blue">#6B7ACD</color>
+    <color name="d_blue">#353963</color>
+    <color name="d_pink">#B85C9B</color>
+    <color name="l_pink">#D172CB</color>
+    <color name="sky_blue">#3DA0FE</color>
+    <color name="golden">#ECD2AC</color>
+    <color name="l_gold">#E5D2AC</color>
+    <color name="lk">#E9DBDA</color>
+
+
+
+
+
+</resources>
