@@ -7,7 +7,8 @@ data class UsersPurchaseItemModel(
     val product_price: String?,
     val product_qty: String?,
     val available_bal: String?,
-    val remaining_bal: String?
+    val remaining_bal: String?,
+    var resale:Boolean
 ) {
-    constructor() : this("", "", "", "", "", "", "")
+    constructor() : this("", "", "", "", "", "", "", false)
 }

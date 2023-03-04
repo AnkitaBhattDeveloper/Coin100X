@@ -25,6 +25,7 @@ class AddActivity : AppCompatActivity() {
         val productImage = intent.getStringExtra("ITEM_IMAGE")
 
         val sale = intent.getStringExtra("RESALE")
+        val bal = intent.getStringExtra("Balance")
 
         replaceFragment(
             BuyFragment.newInstance(

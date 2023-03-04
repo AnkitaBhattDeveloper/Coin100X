@@ -3,17 +3,24 @@ package com.coin.coin100x.activity
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources.Theme
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.coin.coin100x.data.AddMoneyToClientModel
 import com.coin.coin100x.databinding.ActivityProfileBinding
 import com.coin.coin100x.sharedPrefrence.App
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.*
+import kotlin.concurrent.thread
 
 class ProfileActivity : AppCompatActivity() {
     lateinit var binding: ActivityProfileBinding
@@ -24,7 +31,9 @@ class ProfileActivity : AppCompatActivity() {
     val currentUser = FirebaseAuth.getInstance().currentUser?.uid
     lateinit var data: Intent
     private var imageUri: Uri? = null
-    var sum = 0
+    private var sum = 0
+    private var s = 0
+    private var remain = 0
     //var model = AddMoneyToClientModel()
     // val sharedPref: com.coin.coin100x.sharedPrefrence.App? = null
 
@@ -37,13 +46,23 @@ class ProfileActivity : AppCompatActivity() {
         supportActionBar?.hide()
         firebaseDatabase = FirebaseDatabase.getInstance()
         dbRef = firebaseDatabase.getReference("Users")
-
-
-
+        binding.name.text = currentUser
 
         onClick()
-        getDataFromDatabase()
 
+        CoroutineScope(Dispatchers.IO).launch {
+            Log.e("TAG", "onCreate: ${Thread.currentThread().name} ")
+            getMoneyFromDatabase()
+            getSenderTransaction()
+        }
+
+        MainScope().launch(Dispatchers.Default) {
+            Log.e("TAG", "onCreate: main ${Thread.currentThread().name}")
+        }
+        binding.tvShowBalance.setOnClickListener {
+             showBalance()
+        }
+        // userTotalBalance()
 
     }
 
@@ -51,8 +70,9 @@ class ProfileActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Log.e("TAG", "onStart: executed ")
-        // getDataFromDatabase()
+        //getDataFromDatabase()
         //getData()
+        //getMoneyFromDatabase()
     }
 
     private fun onClick() {
@@ -93,106 +113,105 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
+    private fun getMoneyFromDatabase() {
+        db.collection("MoneyAdded").document("ReceiverAmount")
+            .collection(FirebaseAuth.getInstance().uid.toString())
+            .get().addOnCompleteListener {
+                for (db in it.result) {
+                    val senderid = db.data["sender_id"].toString()
+                    val c_id = db.data["client_id"].toString()
+                    val c_name = db.data["client_name"].toString()
+                    val c_amount = db.data["client_amount"].toString()
+                    val c_remain_amount = db.data["client_remaining_amount"].toString()
+                    val time = db.data["current_time"].toString()
+                    val TOT = db.data["type_of_transaction"].toString()
+                    totalUserBalance(senderid, c_id, c_name, c_amount, c_remain_amount, time, TOT)
+                    Log.e("TAG", "getMoneyFromDatabase: ${db.data["client_amount"].toString()}")
+                    Log.e(
+                        "TAG",
+                        "getMoneyFromDatabase: ${db.data["type_of_transaction"].toString()}",
+                    )
 
-    /*private fun getDataFromDatabase() {
-        Log.e("TAG", "getDataFromDatabase: ")
-        dbRef.child("MoneyAdded").child("ReceiverAmount")
-            .child(FirebaseAuth.getInstance().uid.toString())
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    Log.e("TAG", "getDataFromDatabase: datacjsnge))))) ")
-                    for (data in snapshot.children) {
+                }
+            }
+    }
 
-                        val model = data.getValue(AddMoneyToClientModel::class.java)
-                        Log.e(
-                            "TAG",
-                            "getDataFromDatabase: datacjsnge************  ${model?.amount} name = ${model?.clientName.toString()} "
-                        )
-                        binding.name.text = model?.clientName.toString()
-                        App.setString(context, "SENDER_ID", model?.senderId.toString())
-                        App.setString(context, "CLIENT_NAME", model?.clientName.toString())
+    private fun totalUserBalance(
+        senderid: String,
+        c_id: String,
+        c_name: String,
+        c_amount: String,
+        c_remain_amount: String,
+        time: String,
+        typeOfTransaction: String
+    ) {
+        remain = App.getInt(context, App.REMANING_BALANCE)
+        Log.e("TAG", "totalUserBalance: remaining $remain ")
+        sum += remain
+        // App.setInt(context, App.BALANCE, sum)
 
-                        Log.e(
-                            "TAG",
-                            "onDataChange: ${model?.clientId.toString()} == ${FirebaseAuth.getInstance().uid.toString()}"
-                        )
+        val totalBalance = mapOf(
+            "sender_id" to senderid,
+            "client_id" to c_id,
+            "client_name" to c_name,
+            "client_amount" to c_amount,
+            "client_remaining_amount" to c_remain_amount,
+            "current_time" to time,
+            "type_of_transaction" to typeOfTransaction,
+            "sum" to sum
+        )
 
-                        if (model?.clientId.toString() == FirebaseAuth.getInstance().uid.toString()
-                        ) {
+        db.collection("MoneyAdded").document("TotalBalance").set(totalBalance)
+            .addOnCompleteListener {
+                Log.e("TAG", "totalUserBalance: success $totalBalance ")
+            }.addOnFailureListener { Log.e("TAG", "totalUserBalance: failed ") }
+    }
 
-                            if (!model?.remainingAmount.isNullOrEmpty()) {
-                                sum += Integer.parseInt(model?.remainingAmount.toString())
-                                binding.tvBalance.text = sum.toString()
+    private fun getSenderTransaction() {
+        db.collection("SenderMoney").document("CurrentTransaction")
+            .collection(FirebaseAuth.getInstance().uid.toString())
+            .get().addOnCompleteListener {
+                for (snap in it.result) {
+                    Log.e(
+                        "TAG",
+                        "getSenderTransaction: ${snap.data["client_remaining_amount"].toString()}",
+                    )
+                    s += Integer.parseInt(snap.data["client_remaining_amount"].toString())
+                    val tb = App.setInt(context, App.AMOUNT, s)
+                    val td = App.getInt(context, App.AMOUNT)
+                    remain += td
+                    //showBalance()
 
-                                App.setInt(context, "BAL", sum)
+                    App.setInt(context,App.WALLET_AMOUNT,remain)
 
-                                Log.e(
-                                    "TAG",
-                                    "onDataChange: ${model?.clientId.toString()} == ${FirebaseAuth.getInstance().uid.toString()} and amount = $sum"
-                                )
-                            } else
-                                binding.tvBalance.text = "0"
-                        } else
-                            binding.tvBalance.text = "0"
+                    Log.e("TAG", "getSenderTransaction: sum remain ******** $remain")
+                    Log.e(
 
-                    }
+                        "TAG",
+                        "getSenderTransaction:  s *******${snap.data["client_remaining_amount"].toString()}",
+                    )
+                    s=0
+                    //App.setInt(context,App.AMOUNT,0)
+                    Log.e(
+                        "TAG",
+                        "getSenderTransaction:  tb *******${tb.toString()}",
+                    )
+
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("TAG", "onDataChange: ${error.message}")
-                }
-
-            })
-
-    }*/
-
-
-    /* private fun getData() {
-         dbRef.child("RegisteredUser")
-             .child(FirebaseAuth.getInstance().uid.toString())
-             .addListenerForSingleValueEvent(object : ValueEventListener {
-                 override fun onDataChange(snapshot: DataSnapshot) {
-                     if (snapshot.exists()) {
-                         val data = snapshot.getValue(Register_Info::class.java)
-                         Log.e("TAG", "onDataChange: ${data?.userName.toString()} ")
-                         binding.name.text = data?.userName.toString()
-                         App.setString(context, "USER_NAME", data?.userName.toString())
-                     }
-                 }
-
-                 override fun onCancelled(error: DatabaseError) {
-                     TODO("Not yet implemented")
-                 }
-
-             })
-     }*/
-
-
-    private fun getDataFromDatabase() {
-        val ref =
-            db.collection("MoneyAdded").document(currentUser.toString())
-        ref.get().addOnSuccessListener {
-            binding.name.text = it.data?.get("client_name").toString()
-            if (currentUser.toString() == it.data?.get("client_id")) {
-                binding.tvBalance.text = it.data?.get("client_amount").toString()
-                App.setString(context, "USER_NAME", it.data?.get("client_name").toString())
-                App.setString(context, "USER_AMOUNT", it.data?.get("client_amount").toString())
-
-
-            } else {
-                Log.e(
-                    "TAG",
-                    "getDataFromDatabase: ${it.data?.get("client_id")} and ${it.data?.get("client_name")} and ${
-                        it.data?.get("client_amount")
-                    }"
-                )
+            }.addOnFailureListener {
+                Log.e("TAG", "getSenderTransaction: failed ")
             }
 
-        }.addOnFailureListener {
-            Log.e("TAG", "getDataFromDatabase: ${it.message} ")
-        }
 
     }
+
+    private fun showBalance()
+    {
+        binding.Balance.text = App.getInt(context,App.WALLET_AMOUNT).toString()
+        binding.Balance.visibility = View.VISIBLE
+    }
+
 
 
 }

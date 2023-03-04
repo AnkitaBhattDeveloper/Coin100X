@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.coin.coin100x.data.WinnerProductModel
 import com.coin.coin100x.databinding.ActivityLuckyWinnerBinding
 import com.google.firebase.database.*
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
@@ -18,15 +20,16 @@ class LuckyWinnerActivity : AppCompatActivity() {
     lateinit var firebaseDatabase: FirebaseDatabase
     lateinit var dbRef: DatabaseReference
     lateinit var context: Context
+    val db = Firebase.firestore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLuckyWinnerBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.hide()
         context = this
-        firebaseDatabase = FirebaseDatabase.getInstance()
-        dbRef = firebaseDatabase.getReference("Admin")
-
+        /* firebaseDatabase = FirebaseDatabase.getInstance()
+         dbRef = firebaseDatabase.getReference("Admin")
+ */
 
 /*
         val animationFadeIn = AnimationUtils.loadAnimation(this, com.coin.coin100x.R.anim.bounce)
@@ -51,22 +54,29 @@ class LuckyWinnerActivity : AppCompatActivity() {
     }
 
     fun getDataFromDatabase() {
-        dbRef.child("AddProduct").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val value = snapshot.getValue(WinnerProductModel::class.java)
-                    binding.tvLuckyProduct.setText(value?.item_name)
-                    Log.e("TAG", "onDataChange: winner activirty ${value?.item_name} ")
-                }
+        /* dbRef.child("AddProduct").addListenerForSingleValueEvent(object : ValueEventListener {
+             override fun onDataChange(snapshot: DataSnapshot) {
+                 if (snapshot.exists()) {
+                     val value = snapshot.getValue(WinnerProductModel::class.java)
+                     binding.tvLuckyProduct.setText(value?.item_name)
+                     Log.e("TAG", "onDataChange: winner activirty ${value?.item_name} ")
+                 }
 
-            }
+             }
 
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
+             override fun onCancelled(error: DatabaseError) {
+                 TODO("Not yet implemented")
+             }
 
-        })
+         })*/
+
+        db.collection("Winner").document("product_name").get().addOnSuccessListener {
+            binding.tvLuckyProduct.text = it.data?.get("name").toString()
+            Log.e("TAG", "getDataFromDatabase:${it.data?.get("name").toString()} ")
+        }
+
     }
+
 
     private fun onBtnClick() {
         binding.btnSkip.setOnClickListener {

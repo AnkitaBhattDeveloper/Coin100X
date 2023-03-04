@@ -26,6 +26,7 @@ private const val ARG_PARAM2 = "param2"
  */
 class PortfolioFragment : Fragment() {
     // TODO: Rename and change types of parameters
+
     private var param1: String? = null
     private var param2: String? = null
     lateinit var bind: FragmentPortfolioBinding
@@ -94,8 +95,7 @@ class PortfolioFragment : Fragment() {
 
                         val portfolio_adapter = PortfolioAdapter(requireContext(), purchase_list)
                         bind.rvPurchased.apply {
-                            layoutManager =
-                                LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+                            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
                             purchase_list.addAll(
                                 listOf(
                                     UsersPurchaseItemModel(
@@ -105,7 +105,8 @@ class PortfolioFragment : Fragment() {
                                         value?.product_price,
                                         value?.product_qty,
                                         value?.available_bal,
-                                        value?.remaining_bal
+                                        value?.remaining_bal,
+                                        value?.resale!!
                                     )
                                 )
                             )
@@ -113,16 +114,16 @@ class PortfolioFragment : Fragment() {
                         }
 
                         Log.e("TAG", "onDataChange: ${value?.product_name} ")
-
                     }
                 }
-
                 override fun onCancelled(error: DatabaseError) {
                     Log.e("TAG", "onDataChange: ${error?.message} ")
                 }
 
             })
     }
+
+
 
 
 }

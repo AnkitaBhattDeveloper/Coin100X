@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:gravity="center"
+        android:layout_gravity="center"
         android:orientation="horizontal"
         android:padding="5dp">
 
@@ -22,6 +23,7 @@
             android:layout_height="60dp"
             android:layout_margin="5dp"
             android:layout_weight="0.2"
+            android:layout_gravity="center"
             android:padding="4dp"
             android:src="@color/black" />
 
@@ -59,28 +61,42 @@
             android:text="Available Balance"
             android:textColor="@color/white"
             android:textSize="18sp" />
-
-
         <TextView
-            android:id="@+id/tvBalance"
+            android:id="@+id/Balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:padding="8dp"
+            android:text="XXXXXXX"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/tvShowBalance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:padding="8dp"
+            android:text="show balance"
             android:textColor="@color/white"
             android:textSize="18sp" />
 
+
+
     </LinearLayout>
 
-<androidx.appcompat.widget.AppCompatButton
-    android:id="@+id/btShowWinner"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="20dp"
-    android:text="Show Winner"
-    android:background="@drawable/winbtn_gradient"/>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btShowWinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:background="@drawable/winbtn_gradient"
+        android:text="Show Winner" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.coin.coin100x'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.coin.coin100x"
-        minSdk 21
-        targetSdk 32
+        minSdk 28
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -38,7 +38,7 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -47,9 +47,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx:21.1.0'
     implementation 'com.google.firebase:firebase-database-ktx:20.1.0'
     implementation 'com.google.firebase:firebase-firestore-ktx:24.4.1'
+    implementation 'com.google.firebase:firebase-storage-ktx:20.0.1'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     //FireBase bom
     implementation platform('com.google.firebase:firebase-bom:31.1.0')
@@ -69,9 +70,12 @@ dependencies {
     implementation 'nl.dionsegijn:konfetti-xml:2.0.2'
 
 
-        //Cicerone
-    //implementation 'com.github.qamarelsafadi:CurvedBottomNavigation:0.1.3'
+    //Cicerone
+    //implementation 'com.tbuonomo:morph-bottom-navigation:1.0.1'
 
+    //corotuines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.2"
 
 
 }

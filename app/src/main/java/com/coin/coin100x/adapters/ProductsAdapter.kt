@@ -2,6 +2,7 @@ package com.coin.coin100x.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -9,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.coin.coin100x.activity.AddActivity
 import com.coin.coin100x.data.ProductsModel
 import com.coin.coin100x.databinding.ProductsLayoutBinding
+import com.coin.coin100x.databinding.TotalListItemLayoutBinding
 
 class ProductsAdapter(
     val context: Context,
@@ -22,8 +24,8 @@ class ProductsAdapter(
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        binding = ProductsLayoutBinding.inflate(LayoutInflater.from(context), parent, false)
-
+        binding =
+            ProductsLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
 
@@ -32,7 +34,7 @@ class ProductsAdapter(
         holder.bind.tvitemPrice.text = productList[position].item_price
 
         Glide.with(context).load(productList[position].img_url).into(binding.productImage)
-
+        Log.e("TAG", "onBindViewHolder: products adapter called ", )
 
         binding.root.setOnClickListener {
             context.startActivity(

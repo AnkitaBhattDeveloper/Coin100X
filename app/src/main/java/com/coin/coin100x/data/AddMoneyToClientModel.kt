@@ -1,27 +1,23 @@
 package com.coin.coin100x.data
 
 data class AddMoneyToClientModel(
-    val senderId: String?,
-    val clientId: String?,
-    val clientName: String?,
-    /* val product_name: String?,
-     val product_price: String?,
-     val product_qty: String?,*/
-    var amount: String?,
-    var remainingAmount: String?
-) {
-    constructor() : this("", "", "", "", "")
+    val sender_id: String,
+    val client_id: String,
+    val client_name: String,
+    var client_amount: String,
+    var client_remaining_amount: String,
+    var current_time: String
+){
+    val map = mapOf(
+        "sender_id" to sender_id,
+        "client_id" to client_id,
+        "client_name" to client_name,
+        "client_amount" to client_amount,
+        "client_remaining_amount" to client_remaining_amount,
+        "current_time" to current_time
+    )
+    constructor() : this("", "", "", "", "","")
 
-    /*fun toMap(): Map<String, Any?> {
-        return mapOf(
-            "sender_id" to senderId,
-            "client_id" to clientId,
-            "client_name" to clientName,
-            "wallet_amount" to amount,
-            "remaining_amount" to remainingAmount
-        )
-
-    }*/
 
 
 }
