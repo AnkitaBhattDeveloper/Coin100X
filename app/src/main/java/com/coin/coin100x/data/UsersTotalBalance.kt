@@ -1,7 +1,6 @@
 package com.coin.coin100x.data
 
-
-data class Register_Info(
+data class UsersTotalBalance(
     val uuid: String?,
     var userName: String?,
     var email: String?,

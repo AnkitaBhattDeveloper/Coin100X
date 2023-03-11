@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.coin.coin100x.data.AddMoneyToClientModel
+import com.coin.coin100x.data.UsersTotalBalance
 import com.coin.coin100x.databinding.ActivityProfileBinding
 import com.coin.coin100x.sharedPrefrence.App
 import com.google.firebase.auth.FirebaseAuth
@@ -20,6 +21,7 @@ import com.google.firebase.database.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
+import org.checkerframework.checker.units.qual.Current
 import kotlin.concurrent.thread
 
 class ProfileActivity : AppCompatActivity() {
@@ -32,8 +34,10 @@ class ProfileActivity : AppCompatActivity() {
     lateinit var data: Intent
     private var imageUri: Uri? = null
     private var sum = 0
-    private var s = 0
-    private var remain = 0
+    private var bal = 0
+    private var remaining_bal = 0
+    private var total = 0
+    var clientAmount = 0
     //var model = AddMoneyToClientModel()
     // val sharedPref: com.coin.coin100x.sharedPrefrence.App? = null
 
@@ -49,20 +53,27 @@ class ProfileActivity : AppCompatActivity() {
         binding.name.text = currentUser
 
         onClick()
-
+        binding.tvShowBalance.setOnClickListener {
+            showBalance()
+        }
         CoroutineScope(Dispatchers.IO).launch {
             Log.e("TAG", "onCreate: ${Thread.currentThread().name} ")
             getMoneyFromDatabase()
-            getSenderTransaction()
+            getUserBalance()
+            // getSenderTransaction()
+            // getDebitData()
+
         }
 
         MainScope().launch(Dispatchers.Default) {
             Log.e("TAG", "onCreate: main ${Thread.currentThread().name}")
         }
-        binding.tvShowBalance.setOnClickListener {
-             showBalance()
-        }
-        // userTotalBalance()
+        val clientAmount = intent.getStringExtra(App.CLIENT_AMOUNT)
+        Log.e("TAG", "onCreate: client amount $clientAmount")
+
+        if (!clientAmount.isNullOrEmpty())
+            binding.Balance.text = clientAmount
+
 
     }
 
@@ -125,93 +136,134 @@ class ProfileActivity : AppCompatActivity() {
                     val c_remain_amount = db.data["client_remaining_amount"].toString()
                     val time = db.data["current_time"].toString()
                     val TOT = db.data["type_of_transaction"].toString()
-                    totalUserBalance(senderid, c_id, c_name, c_amount, c_remain_amount, time, TOT)
+                    //   totalUserBalance(senderid, c_id, c_name, c_amount, c_remain_amount, time, TOT)
                     Log.e("TAG", "getMoneyFromDatabase: ${db.data["client_amount"].toString()}")
                     Log.e(
                         "TAG",
                         "getMoneyFromDatabase: ${db.data["type_of_transaction"].toString()}",
                     )
-
+                    total += Integer.parseInt(c_amount)
+                    Log.e("TAG", "getMoneyFromDatabase: total balance = $total")
+                    // setCurrentBalance(c_name, total.toString(),"0", c_id, senderid)
+                    //getDebitData(total)
                 }
             }
     }
 
-    private fun totalUserBalance(
-        senderid: String,
-        c_id: String,
-        c_name: String,
-        c_amount: String,
-        c_remain_amount: String,
-        time: String,
-        typeOfTransaction: String
-    ) {
-        remain = App.getInt(context, App.REMANING_BALANCE)
-        Log.e("TAG", "totalUserBalance: remaining $remain ")
-        sum += remain
-        // App.setInt(context, App.BALANCE, sum)
+    /* private fun totalUserBalance(
+         senderid: String,
+         c_id: String,
+         c_name: String,
+         c_amount: String,
+         c_remain_amount: String,
+         time: String,
+         typeOfTransaction: String
+     ) {
+         remain = App.getInt(context, App.REMANING_BALANCE)
+         Log.e("TAG", "totalUserBalance: remaining $remain ")
+         sum += remain
+         // App.setInt(context, App.BALANCE, sum)
 
-        val totalBalance = mapOf(
-            "sender_id" to senderid,
-            "client_id" to c_id,
-            "client_name" to c_name,
-            "client_amount" to c_amount,
-            "client_remaining_amount" to c_remain_amount,
-            "current_time" to time,
-            "type_of_transaction" to typeOfTransaction,
-            "sum" to sum
-        )
+         val totalBalance = mapOf(
+             "sender_id" to senderid,
+             "client_id" to c_id,
+             "client_name" to c_name,
+             "client_amount" to c_amount,
+             "client_remaining_amount" to c_remain_amount,
+             "current_time" to time,
+             "type_of_transaction" to typeOfTransaction,
+             "sum" to sum
+         )
 
-        db.collection("MoneyAdded").document("TotalBalance").set(totalBalance)
-            .addOnCompleteListener {
-                Log.e("TAG", "totalUserBalance: success $totalBalance ")
-            }.addOnFailureListener { Log.e("TAG", "totalUserBalance: failed ") }
+         db.collection("MoneyAdded").document("TotalBalance").set(totalBalance)
+             .addOnCompleteListener {
+                 Log.e("TAG", "totalUserBalance: success $totalBalance ")
+             }.addOnFailureListener { Log.e("TAG", "totalUserBalance: failed ") }
+     }*/
+
+    /*private fun getSenderTransaction() {
+        db.collection("SenderMoney").document("CurrentTransaction")
+            .collection(FirebaseAuth.getInstance().uid.toString()).document("CurrentBalance")
+            .get().addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.e(
+                        "TAG",
+                        "getSenderTransaction: ${
+                            it.result.data?.get("client_amount")?.toString()
+                        }",
+                    )
+                    Log.e(
+                        "TAG",
+                        "getSenderTransaction: ${
+                            it.result.data?.get("current_balance")?.toString()
+                        }",
+                    )
+                    sum =Integer.parseInt(it.result.data?.get("client_amount")?.toString()!!)
+                    Log.e("TAG", "getSenderTransaction: total balance su  ====== $sum ")
+
+
+                }
+            }
+    }*/
+
+
+    /* private fun getDebitData() {
+         db.collection("MoneyAdded").document("Debited_Amount")
+             .collection(FirebaseAuth.getInstance().uid.toString())
+             .document("CurrentBalance").get().addOnCompleteListener {
+                 if (it.result.exists()) {
+                     Log.e(
+                         "TAG",
+                         "getDebitData: remaining balnace${
+                             it.result.data?.get("remaining_balance").toString()
+                         } ",
+                     )
+                     binding.Balance.text = it.result.data?.get("remaining_balance").toString()
+
+
+                     Log.e(
+                         "TAG",
+                         "getDebitData current balance :${
+                             it.result.data?.get("total_balance").toString()
+                         } ",
+                     )
+                     bal = Integer.parseInt(it.result.data?.get("total_balance").toString())
+                     sum = total - bal
+                     Log.e("TAG", "getDebitData: sum is = $sum ")
+
+                     remaining_bal = sum + Integer.parseInt(
+                         it.result.data?.get("remaining_balance").toString()
+                     )
+                     Log.e(
+                         "TAG",
+                         "getDebitData: adding sum and remaining balance is = $remaining_bal",
+                     )
+                     App.setInt(context, App.WALLET_AMOUNT, remaining_bal)
+
+                 }
+             }.addOnFailureListener {
+                 Log.e("TAG", "setDebitData: failed")
+             }
+     }*/
+
+    private fun showBalance() {
+        getUserBalance()
     }
 
-    private fun getSenderTransaction() {
-        db.collection("SenderMoney").document("CurrentTransaction")
-            .collection(FirebaseAuth.getInstance().uid.toString())
-            .get().addOnCompleteListener {
-                for (snap in it.result) {
-                    Log.e(
-                        "TAG",
-                        "getSenderTransaction: ${snap.data["client_remaining_amount"].toString()}",
-                    )
-                    s += Integer.parseInt(snap.data["client_remaining_amount"].toString())
-                    val tb = App.setInt(context, App.AMOUNT, s)
-                    val td = App.getInt(context, App.AMOUNT)
-                    remain += td
-                    //showBalance()
-
-                    App.setInt(context,App.WALLET_AMOUNT,remain)
-
-                    Log.e("TAG", "getSenderTransaction: sum remain ******** $remain")
-                    Log.e(
-
-                        "TAG",
-                        "getSenderTransaction:  s *******${snap.data["client_remaining_amount"].toString()}",
-                    )
-                    s=0
-                    //App.setInt(context,App.AMOUNT,0)
-                    Log.e(
-                        "TAG",
-                        "getSenderTransaction:  tb *******${tb.toString()}",
-                    )
+    private fun getUserBalance() {
+        db.collection("UsersBalance").document(FirebaseAuth.getInstance().uid.toString()).get()
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    val c_balance = it.result.data?.get("user_balance").toString()
+                    Log.e("TAG", "getUserBalance: $c_balance")
+                    binding.Balance.text = c_balance
 
                 }
 
             }.addOnFailureListener {
-                Log.e("TAG", "getSenderTransaction: failed ")
-            }
-
-
+            Log.e("TAG", "getUserBalance: ${it.message}")
+        }
     }
-
-    private fun showBalance()
-    {
-        binding.Balance.text = App.getInt(context,App.WALLET_AMOUNT).toString()
-        binding.Balance.visibility = View.VISIBLE
-    }
-
 
 
 }

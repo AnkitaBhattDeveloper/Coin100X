@@ -14,8 +14,12 @@ class App : Application() {
         var WALLET_AMOUNT = " "
         var UUID = "userId"
         var BALANCE = " "
+        var CURRENT_BALANCE = " "
         var REMANING_BALANCE = " "
         var RESALE = false
+        var REMAINING = ""
+        var CLIENT_TOTAl_PRICE = " "
+        var CLIENT_AMOUNT = "0"
 
 
         fun setString(context: Context, key: String, value: String) {
@@ -23,9 +27,10 @@ class App : Application() {
                 context.getSharedPreferences(PREF_USER, MODE_PRIVATE)
             val editor: SharedPreferences.Editor = sharedPreferences.edit()
             editor.putString(key, value)
-            editor.apply()
+          /*  editor.remove(WALLET_AMOUNT)
+            editor.commit()*/
             editor.clear()
-            //editor.commit()
+            editor.apply()
         }
 
         fun getString(context: Context, key: String): String {
@@ -40,8 +45,11 @@ class App : Application() {
                 context.getSharedPreferences(PREF_USER, Application.MODE_PRIVATE)
             val editor: SharedPreferences.Editor = sharedPreferences.edit()
             editor.putInt(key, value)
-            editor.apply()
-            editor.clear()
+           /* editor.remove(WALLET_AMOUNT)
+            editor.commit()*/
+             editor.clear()
+             editor.apply()
+
         }
 
         fun getInt(context: Context, key: String): Int {

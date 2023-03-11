@@ -1,5 +1,6 @@
 package com.coin.coin100x.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.bumptech.glide.Glide
+import com.coin.coin100x.activity.ProfileActivity
 import com.coin.coin100x.data.AddMoneyToClientModel
 import com.coin.coin100x.data.UsersPurchaseItemModel
 import com.coin.coin100x.databinding.FragmentBuyBinding
@@ -20,6 +22,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.log
 
 // TODO: Rename parameter arguments, choose names that match
@@ -46,6 +51,7 @@ class BuyFragment : Fragment() {
     var isChecked = false
     var sum = 0
     var item_count = 1
+    var remaining_amount = 0
 
 
     val firebaseDatabase = FirebaseDatabase.getInstance()
@@ -88,6 +94,10 @@ class BuyFragment : Fragment() {
 
         dbRef = firebaseDatabase.getReference("Users")
 
+        CoroutineScope(Dispatchers.IO).launch {
+            getUserDetail()
+        }
+
         bind.itemName.text = param1.toString()
         bind.tvItemPrice.text = param2.toString()
         bind.qty.setText("1")
@@ -99,36 +109,38 @@ class BuyFragment : Fragment() {
         user_id = App.getString(requireContext(), "USER_ID")
         var current_amount = App.getString(requireContext(), "USER_REMAINING_AMOUNT")
 
-        val bal = App.getInt(requireContext(), App.BALANCE)
-        Log.e("TAG", "onViewCreated: balance = $bal ")
+        val wallet = App.getInt(requireContext(), App.WALLET_AMOUNT)
+        Log.e("TAG", "onViewCreated: balance = $wallet ")
 
-        bind.points.text = bal.toString()
+        //val wallet = App.getInt(requireContext(), App.WALLET_AMOUNT)
+
+        bind.points.text = wallet.toString()
+        Log.e("TAG", "onViewCreated: wallet in buy fragment $wallet  ")
 
         //addProductQty(param1.toString(), Integer.parseInt(param2.toString()), wallet_amount)
 
 
         Glide.with(requireContext()).load(param3.toString()).into(bind.image)
+        /* totalSum(
+             sender_id,
+             user_name,
+             param1.toString(),
+             Integer.parseInt(param2.toString()),
+             wallet,
+         )*/
 
-        bind.btBuy.setOnClickListener {
-            Log.e("TAG", "onViewCreated: buy button click  ")
-            totalSum(
-                sender_id,
-                user_name,
-                param1.toString(),
-                Integer.parseInt(param2.toString()),
-                bal,
-            )
-            App.setString(requireContext(), "PRODUCT_NAME", (param1.toString()))
+        App.setString(requireContext(), "PRODUCT_NAME", (param1.toString()))
 
-        }
     }
 
     private fun totalSum(
-        sender_id: String,
+        userId: String,
         userName: String,
+        userEmail: String,
+        userNumber: String,
         item_name: String,
         item_price: Int,
-        amount: Int
+        wallet_amount: Int
     ) {
         val qty = bind.qty.text.toString()
         Log.e("TAG", "totalSum: quantity = $qty")
@@ -146,11 +158,10 @@ class BuyFragment : Fragment() {
                 bind.tvItemPrice.text = sum.toString()
                 bind.totalPrice.text = sum.toString()
 
-                if (amount >= sum) {
-                    val re_amount = (amount - sum).toString()
-                    bind.points.text = re_amount
-
-                    Log.e("TAG", "totalSum: reamount = $re_amount")
+                if (wallet_amount >= sum) {
+                    remaining_amount = wallet_amount - sum
+                    bind.points.text = remaining_amount.toString()
+                    Log.e("TAG", "totalSum: reamount = $remaining_amount")
 
                     //addDataToDatabase(sender_id,item_name,item_price.toString(),count.toString(),wallet.toString(),wallet_amount.toString())
                     addProductsToDatabase(
@@ -159,20 +170,37 @@ class BuyFragment : Fragment() {
                         item_name,
                         item_price.toString(),
                         count.toString(),
-                        amount.toString(),
-                        re_amount
+                        wallet_amount.toString(),
+                        remaining_amount.toString()
 
                     )
-
-                    userTotalBalance(
-                        amount.toString(),
-                        param1.toString(),
-                        user_name,
-                        re_amount,
-                        "",
-                        sender_id,
-                        amount.toString()
+                    setDebitData(
+                        userName,
+                        FirebaseAuth.getInstance().uid.toString(),
+                        wallet_amount.toString(),
+                        remaining_amount.toString(),
+                        "sender_id"
                     )
+                    bind.btBuy.setOnClickListener {
+                        updateUserBalance(
+                            userId,
+                            userName,
+                            userEmail,
+                            userNumber,
+                            remaining_amount.toString()
+                        )
+                    }
+
+
+                    /* userTotalBalance(
+                         wallet_amount.toString(),
+                         param1.toString(),
+                         user_name,
+                         remaining_amount,
+                         "",
+                         sender_id,
+                         wallet_amount.toString()
+                     )*/
 
 
                     /*  updateDataToDatabase(
@@ -185,7 +213,7 @@ class BuyFragment : Fragment() {
 
                 } else {
                     Log.e("TAG", "totalSum: not enough balance ")
-                    bind.points.text = amount.toString()
+                    bind.points.text = wallet_amount.toString()
                 }
             }
         }
@@ -228,116 +256,168 @@ class BuyFragment : Fragment() {
             }
     }
 
-    /*private fun updateDataToDatabase(
+
+    private fun setDebitData(
+        clientName: String,
+        clientId: String,
+        totalBalance: String,
+        remaningBalance: String,
+        senderId: String
+    ) {
+        val debitData = mapOf(
+            "client_name" to clientName,
+            "client_id" to clientId,
+            "total_balance" to totalBalance,
+            "remaining_balance" to remaningBalance,
+            "sender_id" to senderId,
+            "type_of_transaction" to "Debit"
+        )
+
+        db.collection("MoneyAdded").document("Debited_Amount")
+            .collection(FirebaseAuth.getInstance().uid.toString())
+            .document("CurrentBalance").set(debitData).addOnCompleteListener {
+                setCurrentBalance(clientName, totalBalance, remaningBalance, clientId, senderId)
+
+            }.addOnFailureListener {
+                Log.e("TAG", "setDebitData: failed")
+            }
+    }
+
+    private fun setCurrentBalance(
+        u_name: String,
+        current_bal: String,
+        remaining_balance: String,
+        u_id: String,
+        sender: String
+    ) {
+        val updatedUserTotalBalance = mapOf(
+            "user_name" to u_name,
+            "current_balance" to current_bal,
+            "remaining_balance" to remaining_balance,
+            "user_id" to u_id,
+            "sender_id" to sender
+        )
+
+        db.collection("User_Current_Balance").document(FirebaseAuth.getInstance().uid.toString())
+            .set(updatedUserTotalBalance).addOnCompleteListener {
+                Log.e("TAG", "updateCurrentBalance: update successfully ")
+
+            }.addOnFailureListener {
+                Log.e("TAG", "updateCurrentBalance: update failed ")
+            }
+
+
+    }
+
+    /*  private fun getSenderTransaction() {
+          db.collection("SenderMoney").document("CurrentTransaction")
+              .collection(FirebaseAuth.getInstance().uid.toString()).document("CurrentBalance")
+              .get().addOnCompleteListener {
+                  if (it.isSuccessful) {
+                      Log.e(
+                          "TAG",
+                          "getSenderTransaction: ${
+                              it.result.data?.get("client_amount")?.toString()
+                          }",
+                      )
+                      Log.e(
+                          "TAG",
+                          "getSenderTransaction: ${
+                              it.result.data?.get("current_balance")?.toString()
+                          }",
+                      )
+                      totalSum(
+                          "sender_id",
+                          user_name,
+                          param1.toString(),
+                          Integer.parseInt(param2.toString()),
+                          Integer.parseInt(it.result.data?.get("current_balance")?.toString()!!),
+                      )
+                      bind.points.text = it.result.data?.get("current_balance")?.toString()
+
+                  }
+              }
+      }
+  */
+
+/*    private fun updateSenderTransaction(
         senderid: String,
         c_id: String,
         c_name: String,
-        bal: String,
-        current_bal: String
+        c_amount: String,
+        // c_remain_amount: String,
+        balance: String,
+        time: String
     ) {
-        val updateMap = mapOf(
-            *//*"sender_id" to senderid,
+        val totalBalance = mapOf(
+            "sender_id" to senderid,
             "client_id" to c_id,
             "client_name" to c_name,
-            "client_amount" to bal,*//*
-            "client_remaining_amount" to current_bal,
-            //"current_time" to "date"
+            "client_amount" to 0,
+            //"client_remaining_amount" to c_remain_amount,
+            "current_balance" to balance,
+            "current_time" to time,
+            "type_of_transaction" to "credit"
         )
-        // val updatedata = AddMoneyToClientModel(senderid, c_id, c_name, bal, current_bal, "")
-        val ref =
-            db.collection("MoneyAdded").document("ReceiverAmount")
-                .collection(FirebaseAuth.getInstance().uid.toString())
-                .document("Total_Balance").update(updateMap).addOnSuccessListener {
 
-                }.addOnFailureListener{
-
-                }
-
-
-        Log.e("TAG", "updateDataToDatabase: $ref ")
-
-        Log.e("TAG", "updateDataToDatabase: current balance = $current_bal and total bal = $bal ")
+        db.collection("SenderMoney").document("CurrentTransaction").collection(c_id)
+            .document("CurrentBalance")
+            .update(totalBalance).addOnSuccessListener {
+                Log.e("TAG", "setSenderTransaction: success $totalBalance")
+            }.addOnFailureListener {
+                Log.e("TAG", "setSenderTransaction: failed ")
+            }
 
 
     }*/
 
-    private fun userTotalBalance(
-        amount: String,
-        c_id: String,
-        c_name: String,
-        current_bal: String,
-        date: String,
-        senderid: String,
-        balance: String
-    ) {
-
-        App.setInt(requireContext(),App.REMANING_BALANCE,Integer.parseInt(current_bal))
-
-        val totalBalance = mapOf(
-            "sender_id" to senderid,
-            "client_id" to c_id,
-            "client_name" to c_name,
-            "client_amount" to balance,
-            "client_remaining_amount" to current_bal,
-            "current_time" to date,
-            "type_of_transaction" to "Debit",
-            "sum" to current_bal
-        )
-
-        // App.setInt(requireContext(), App.BALANCE, sum)
-        db.collection("MoneyAdded").document("TotalBalance").update(totalBalance)
+    private fun getUserDetail() {
+        db.collection("UsersBalance").document(FirebaseAuth.getInstance().uid.toString()).get()
             .addOnCompleteListener {
-                Log.e("TAG", "userTotalBalance: updation success ")
-            }.addOnFailureListener {
-                Log.e("TAG", "userTotalBalance: failed ")
-            }
-    }
-
-    private fun getSenderTransaction( amount: String,
-                                      c_id: String,
-                                      c_name: String,
-                                      current_bal: String,
-                                      date: String,
-                                      senderid: String,
-                                      balance: String) {
-
-        val totalBalance = mapOf(
-            "sender_id" to senderid,
-            "client_id" to c_id,
-            "client_name" to c_name,
-            "client_amount" to balance,
-            "client_remaining_amount" to current_bal,
-            "current_time" to date,
-            "type_of_transaction" to "Debit",
-            "sum" to current_bal
-        )
-
-
-        db.collection("SenderMoney").document("CurrentTransaction")
-            .collection(FirebaseAuth.getInstance().uid.toString())
-            .get().addOnCompleteListener {
-                for (snap in it.result) {
-                    Log.e(
-                        "TAG",
-                        "getSenderTransaction: ${snap.data["client_remaining_amount"].toString()}",
+                Log.e("TAG", "getUserDetail: ")
+                if (it.isSuccessful) {
+                    val bal = it.result.data?.get("user_balance").toString()
+                    val userId = it.result.data?.get("user_id").toString()
+                    val userName = it.result.data?.get("user_name").toString()
+                    val userEmail = it.result.data?.get("user_email").toString()
+                    val userNumber = it.result.data?.get("user_phoneNumber").toString()
+                    bind.points.text = bal
+                    totalSum(
+                        userId,
+                        user_name,
+                        userEmail,
+                        userNumber,
+                        param1.toString(),
+                        Integer.parseInt(param2.toString()),
+                        Integer.parseInt(bal)
                     )
-
-                    Log.e("TAG", "getSenderTransaction: sum remain ******** remain")
-                    Log.e(
-
-                        "TAG",
-                        "getSenderTransaction:  s *******${snap.data["client_remaining_amount"].toString()}",
-                    )
-
-                    //App.setInt(context,App.AMOUNT,0)
 
                 }
-
             }.addOnFailureListener {
-                Log.e("TAG", "getSenderTransaction: failed ")
+
+        }
+    }
+
+    private fun updateUserBalance(
+        userId: String,
+        userName: String,
+        userEmail: String,
+        userNumber: String,
+        currentBalance: String
+    ) {
+        val userBalance = mapOf(
+            "user_id" to userId,
+            "user_name" to userName,
+            "user_email" to userEmail,
+            "user_phoneNumber" to userNumber,
+            "user_balance" to currentBalance
+        )
+        db.collection("UsersBalance").document(userId)
+            .update(userBalance).addOnCompleteListener {
+                Log.e("TAG", "addDataToDatabase: $it")
+            }.addOnFailureListener {
+                Log.e("TAG", "addDataToDatabase: ${it.message}")
             }
-
-
     }
 
 
