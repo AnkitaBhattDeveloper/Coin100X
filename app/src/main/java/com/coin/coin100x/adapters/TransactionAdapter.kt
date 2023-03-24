@@ -24,10 +24,10 @@ class TransactionAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val amt = Integer.parseInt(purchaseList[position].client_amount!!)
-        val sender_id = Integer.parseInt(purchaseList[position].sender_id!!)
+//        val sender_id = Integer.parseInt(purchaseList[position].sender_id!!)
 
 
-        holder.bind.tvSenderId.text = sender_id.toString()
+       // holder.bind.tvSenderId.text = sender_id.toString()
         holder.bind.tvSenderMoney.text = amt.toString()
 
 

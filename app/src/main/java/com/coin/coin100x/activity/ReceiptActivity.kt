@@ -10,6 +10,7 @@ import com.coin.coin100x.data.ReceiptDataModel
 import com.coin.coin100x.databinding.ActivityReceiptBinding
 import com.coin.coin100x.fragments.PortfolioFragment
 import com.coin.coin100x.fragments.ReceiptFragment
+import com.coin.coin100x.fragments.TransactionHistory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -33,6 +34,10 @@ class ReceiptActivity : AppCompatActivity() {
         val recp = intent.getStringExtra("RECEIPT")
         if (recp?.equals("receipt") == true)
             replaceFragment(ReceiptFragment())
+
+        val tHistory = intent.getStringExtra("TRANSACTION")
+        if (tHistory?.equals("transactionHistory") == true)
+            replaceFragment(TransactionHistory())
 
 
         Log.e("TAG", "onCreate: recepit activity key =  ")

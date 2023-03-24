@@ -28,6 +28,8 @@
     <color name="golden">#ECD2AC</color>
     <color name="l_gold">#E5D2AC</color>
     <color name="lk">#E9DBDA</color>
+    <color name="green">#4CAF50</color>
+    <color name="orange">#FF5722</color>
 
 
 </resources>

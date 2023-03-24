@@ -12,6 +12,8 @@ import com.coin.coin100x.databinding.FragmentReceiptBinding
 import com.coin.coin100x.sharedPrefrence.App
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -31,6 +33,7 @@ class ReceiptFragment : Fragment() {
     lateinit var bind: FragmentReceiptBinding
     lateinit var firebaseDatabase: FirebaseDatabase
     lateinit var dbRef: DatabaseReference
+    var db = Firebase.firestore
     var receipt_list: ArrayList<ReceiptDataModel> = arrayListOf()
 
 
@@ -109,7 +112,6 @@ class ReceiptFragment : Fragment() {
                                     value?.phone_Number.toString(),
                                     App.getString(requireContext(), "PRODUCT_NAME"),
                                     App.getInt(requireContext(), "TOTAL_PRICE"),
-
                                     )
                             )
                         )
@@ -128,8 +130,13 @@ class ReceiptFragment : Fragment() {
     }
 
 
-    private fun setData() {
-
+    private fun getTransactionHistoryData() {
+        db.collection("MoneyAdded").document("ReceiverAmount")
+            .collection(FirebaseAuth.getInstance().uid.toString()).get().addOnCompleteListener {
+                Log.e("TAG", "getTransactionHistoryData: success")
+            }.addOnFailureListener {
+                Log.e("TAG", "getTransactionHistoryData: failed")
+            }
     }
 
 }

@@ -96,13 +96,19 @@ class ProfileActivity : AppCompatActivity() {
         binding.tvTransactionHistory.setOnClickListener {
             startActivity(
                 Intent(context, ReceiptActivity::class.java)
-                    .putExtra("RECEIPT", "receipt")
+                    .putExtra("TRANSACTION", "transactionHistory")
             )
         }
         binding.tvPortfolio.setOnClickListener {
             startActivity(
                 Intent(context, ReceiptActivity::class.java)
                     .putExtra("PORTFOLIO", "portfolio")
+            )
+        }
+        binding.tvReceipt.setOnClickListener {
+            startActivity(
+                Intent(context, ReceiptActivity::class.java)
+                    .putExtra("RECEIPT", "receipt")
             )
         }
 
@@ -261,8 +267,8 @@ class ProfileActivity : AppCompatActivity() {
                 }
 
             }.addOnFailureListener {
-            Log.e("TAG", "getUserBalance: ${it.message}")
-        }
+                Log.e("TAG", "getUserBalance: ${it.message}")
+            }
     }
 
 
